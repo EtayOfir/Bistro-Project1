@@ -1,0 +1,41 @@
+# ============================
+# Java / Eclipse / IDE ignores
+# ============================
+
+# Compiled class files
+*.class
+
+# Log files
+*.log
+
+# Generated files
+*.jar
+*.war
+*.ear
+
+# Eclipse project files
+.classpath
+.project
+.settings/
+
+# VS Code
+.vscode/
+
+# IntelliJ
+.idea/
+*.iml
+
+# Build directories
+bin/
+build/
+target/
+
+# Backup & temp files
+*.tmp
+*.bak
+*.swp
+
+# OS-specific files
+Thumbs.db
+.DS_Store
+
