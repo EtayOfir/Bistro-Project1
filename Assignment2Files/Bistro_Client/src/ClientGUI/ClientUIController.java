@@ -5,12 +5,20 @@ import java.io.IOException;
 import client.ChatClient;
 import common.ChatIF;
 import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.effect.GaussianBlur;
+import javafx.scene.layout.AnchorPane;
 
 public class ClientUIController implements ChatIF {
 
@@ -37,13 +45,41 @@ public class ClientUIController implements ChatIF {
     @FXML
     private Button exit;
 
+    // NEW: table for reservation details
+    @FXML
+    private TableView<ReservationRow> reservationTable;
+
+    @FXML
+    private TableColumn<ReservationRow, String> fieldColumn;
+
+    @FXML
+    private TableColumn<ReservationRow, String> valueColumn;
+
+    // Keep this as a log/status area
     @FXML
     private TextArea reservationDetailsTextArea;
 
     private String orderNum;
 
+    @FXML
+    private AnchorPane blurOverlay;
+    
     // Client
     private ChatClient chatClient;
+
+    // NEW: setup table columns
+    @FXML
+    public void initialize() {
+        if (fieldColumn != null) {
+            fieldColumn.setCellValueFactory(data -> data.getValue().fieldProperty());
+        }
+        if (valueColumn != null) {
+            valueColumn.setCellValueFactory(data -> data.getValue().valueProperty());
+        }
+        if (blurOverlay != null) {
+            blurOverlay.setEffect(new GaussianBlur(20));
+        }
+    }
 
     public void initClient(String host, int port) {
         try {
@@ -124,17 +160,22 @@ public class ClientUIController implements ChatIF {
             chatClient.handleMessageFromClientUI(msg);
 
             Platform.runLater(() -> {
-                reservationDetailsTextArea.setText("Loading reservation " + orderNum + "...");
+                reservationDetailsTextArea.setText("Loading reservation " + orderNum + "...\n");
+                if (reservationTable != null) {
+                    reservationTable.getItems().clear();
+                }
             });
 
         } catch (Exception e) {
             e.printStackTrace();
             Platform.runLater(() -> {
                 orderNumber.setText("Error");
-                // CHANGED: use the new TextFields instead of old labels
                 numberOfGuestsField.setText("-");
                 orderDateField.setText("-");
-                reservationDetailsTextArea.setText("Error sending request: " + e.getMessage());
+                reservationDetailsTextArea.setText("Error sending request: " + e.getMessage() + "\n");
+                if (reservationTable != null) {
+                    reservationTable.getItems().clear();
+                }
             });
         }
     }
@@ -149,7 +190,7 @@ public class ClientUIController implements ChatIF {
         Platform.runLater(() -> handleServerMessage(message));
     }
 
-    // Parse server message and update fields + text area
+    // Parse server message and update fields + table + log
     private void handleServerMessage(String message) {
         if (message == null) return;
 
@@ -173,33 +214,42 @@ public class ClientUIController implements ChatIF {
                 numberOfGuestsField.setText(numGuests);
                 orderDateField.setText(date);
 
-                StringBuilder details = new StringBuilder();
-                details.append("Reservation Details\n");
-                details.append("-------------------\n");
-                details.append("Order Number      : ").append(ordNum).append("\n");
-                details.append("Guests            : ").append(numGuests).append("\n");
-                details.append("Order Date        : ").append(date).append("\n");
-                details.append("Confirmation Code : ").append(confCode).append("\n");
-                details.append("Subscriber ID     : ").append(subscriberId).append("\n");
-                details.append("Placing Date      : ").append(placingDate).append("\n");
+                // Build table rows
+                ObservableList<ReservationRow> rows = FXCollections.observableArrayList(
+                        new ReservationRow("Order Number",      ordNum),
+                        new ReservationRow("Guests",            numGuests),
+                        new ReservationRow("Order Date",        date),
+                        new ReservationRow("Confirmation Code", confCode),
+                        new ReservationRow("Subscriber ID",     subscriberId),
+                        new ReservationRow("Placing Date",      placingDate)
+                );
+                if (reservationTable != null) {
+                    reservationTable.setItems(rows);
+                }
 
-                reservationDetailsTextArea.setText(details.toString());
+                reservationDetailsTextArea.setText("Reservation loaded successfully.\n");
+
             } else {
                 orderNumber.setText("Error");
                 numberOfGuestsField.setText("-");
                 orderDateField.setText("-");
-                reservationDetailsTextArea.setText("Invalid reservation data from server: " + message);
+                if (reservationTable != null) {
+                    reservationTable.getItems().clear();
+                }
+                reservationDetailsTextArea.setText("Invalid reservation data from server: " + message + "\n");
             }
 
         } else if (message.startsWith("RESERVATION_NOT_FOUND")) {
             orderNumber.setText("Not found");
-            // CHANGED: use the new TextFields
             numberOfGuestsField.setText("-");
             orderDateField.setText("-");
+            if (reservationTable != null) {
+                reservationTable.getItems().clear();
+            }
 
             String ord = (orderNum != null) ? orderNum : "";
             reservationDetailsTextArea.setText(
-                    "Reservation not found for order number: " + ord);
+                    "Reservation not found for order number: " + ord + "\n");
 
         } else if (message.equals("Connected to server") || message.equals("Disconnected from server")) {
             reservationDetailsTextArea.appendText(message + "\n");
@@ -207,6 +257,7 @@ public class ClientUIController implements ChatIF {
             reservationDetailsTextArea.appendText(message + "\n");
         }
     }
+
     @FXML
     private void onExitClicked(ActionEvent event) {
         try {
@@ -219,5 +270,25 @@ public class ClientUIController implements ChatIF {
 
         Platform.exit();   // closes the JavaFX UI
         System.exit(0);    // kills the process completely
+    }
+
+    // --- NEW helper model class for table rows ---
+    public static class ReservationRow {
+        private final StringProperty field  = new SimpleStringProperty();
+        private final StringProperty value  = new SimpleStringProperty();
+
+        public ReservationRow(String field, String value) {
+            this.field.set(field);
+            this.value.set(value);
+        }
+
+        public StringProperty fieldProperty() { return field; }
+        public StringProperty valueProperty() { return value; }
+
+        public String getField() { return field.get(); }
+        public String getValue() { return value.get(); }
+
+        public void setField(String f) { field.set(f); }
+        public void setValue(String v) { value.set(v); }
     }
 }

@@ -1,70 +1,186 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.SVGPath?>
 
-<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
-      prefHeight="491.0" prefWidth="744.0"
-      xmlns="http://javafx.com/javafx/8.0.171"
-      xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="ClientGUI.ClientUIController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
+            prefHeight="540.0" prefWidth="760.0"
+            xmlns="http://javafx.com/javafx/8.0.171"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="ClientGUI.ClientUIController"
+            stylesheets="@client-ui.css"
+            styleClass="root-pane">
 
     <children>
 
-        <!-- Static label -->
-        <Label layoutX="40.0" layoutY="38.0" text="Order Number" />
+        <!-- Dark overlay (blur target) -->
+        <AnchorPane fx:id="blurOverlay"
+                    styleClass="dark-overlay"
+                    mouseTransparent="true"
+                    AnchorPane.topAnchor="0.0"
+                    AnchorPane.bottomAnchor="0.0"
+                    AnchorPane.leftAnchor="0.0"
+                    AnchorPane.rightAnchor="0.0" />
 
-        <!-- User enters order number here -->
-        <TextField fx:id="orderNumberInput"
-                   layoutX="40.0" layoutY="64.0"
-                   promptText="Enter order number" />
+        <!-- Main responsive layout -->
+        <BorderPane AnchorPane.topAnchor="0.0"
+                    AnchorPane.bottomAnchor="0.0"
+                    AnchorPane.leftAnchor="0.0"
+                    AnchorPane.rightAnchor="0.0">
 
-        <!-- Dynamic label showing the loaded order number from DB -->
-        <Label fx:id="orderNumber"
-               layoutX="250.0" layoutY="38.0"
-               text="-" />
+            <!-- TOP -->
+            <top>
+                <VBox alignment="CENTER" spacing="10">
+                    <padding>
+                        <Insets top="20" right="0" bottom="10" left="0"/>
+                    </padding>
+                    <children>
+                        <HBox alignment="CENTER" spacing="15">
+                            <children>
+                                <AnchorPane styleClass="logo-container">
+                                    <children>
+                                        <SVGPath content="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z"
+                                                 fill="#a4763c"
+                                                 scaleX="1.8" scaleY="1.8"
+                                                 layoutX="7.0" layoutY="5.0" />
+                                    </children>
+                                </AnchorPane>
+                                <Label styleClass="bistro-title" text="Bistro Reservations"/>
+                            </children>
+                        </HBox>
+                    </children>
+                </VBox>
+            </top>
 
-        <!-- Button: Show Reservation -->
-        <Button fx:id="showReservation"
-                layoutX="40.0" layoutY="101.0"
-                mnemonicParsing="false"
-                text="Show Reservation"
-                onAction="#onShowReservationClicked" />
+            <!-- CENTER -->
+            <center>
+                <VBox spacing="20" alignment="TOP_CENTER">
+                    <padding>
+                        <Insets top="10" right="40" bottom="20" left="40"/>
+                    </padding>
+                    <children>
 
-        <!-- Order Date -->
-        <Label layoutX="40.0" layoutY="157.0" text="Order Date" />
-        <TextField fx:id="orderDateField"
-                   layoutX="40.0" layoutY="191.0"
-                   prefWidth="150.0" />
+                        <!-- Order number -->
+                        <VBox spacing="5">
+                            <children>
+                                <HBox spacing="10" alignment="CENTER_LEFT">
+                                    <children>
+                                        <Label text="Order Number" styleClass="input-label"/>
+                                        <Label fx:id="orderNumber"
+                                               styleClass="order-status-label"
+                                               text="-" />
+                                    </children>
+                                </HBox>
 
-        <!-- Number Of Guests -->
-        <Label layoutX="254.0" layoutY="157.0" text="Number Of Guests" />
-        <TextField fx:id="numberOfGuestsField"
-                   layoutX="254.0" layoutY="191.0"
-                   prefWidth="80.0" />
+                                <HBox spacing="10" alignment="CENTER_LEFT">
+                                    <children>
+                                        <SVGPath content="M7 2h10l1 2h2v18H3V4h2l1-2zm0 4v2h10V6H7zm0 4v2h10v-2H7zm0 4v2h7v-2H7z"
+                                                 styleClass="icon-path"/>
+                                        <TextField fx:id="orderNumberInput"
+                                                   promptText="Enter order number"
+                                                   prefWidth="220.0"/>
+                                        <Button fx:id="showReservation"
+                                                text="Show Reservation"
+                                                onAction="#onShowReservationClicked"
+                                                styleClass="bistro-button"/>
+                                    </children>
+                                </HBox>
+                            </children>
+                        </VBox>
 
-        <!-- Update button -->
-        <Button fx:id="update"
-                layoutX="461.0" layoutY="191.0"
-                mnemonicParsing="false"
-                text="Update"
-                onAction="#onUpdateReservationClicked" />
+                        <!-- Order Date + Guests -->
+                        <HBox spacing="40" alignment="CENTER_LEFT">
+                            <children>
 
-        <!-- Reservation details text area -->
-        <TextArea fx:id="reservationDetailsTextArea"
-                  layoutX="40.0" layoutY="246.0"
-                  prefHeight="180.0" prefWidth="667.0" />
+                                <!-- Date -->
+                                <VBox spacing="5">
+                                    <children>
+                                        <Label text="Order Date" styleClass="input-label"/>
+                                        <HBox spacing="10" alignment="CENTER_LEFT">
+                                            <children>
+                                                <SVGPath content="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"
+                                                         styleClass="icon-path"/>
+                                                <TextField fx:id="orderDateField"
+                                                           prefWidth="160.0"
+                                                           styleClass="text-field"/>
+                                            </children>
+                                        </HBox>
+                                    </children>
+                                </VBox>
 
-        <!-- Exit button -->
-        <Button fx:id="exit"
-        layoutX="672.0"
-        layoutY="444.0"
-        mnemonicParsing="false"
-        text="Exit"
-        onAction="#onExitClicked" />
+                                <!-- Guests -->
+                                <VBox spacing="5">
+                                    <children>
+                                        <Label text="Number Of Guests" styleClass="input-label"/>
+                                        <HBox spacing="10" alignment="CENTER_LEFT">
+                                            <children>
+                                                <SVGPath content="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+                                                         styleClass="icon-path"/>
+                                                <TextField fx:id="numberOfGuestsField"
+                                                           prefWidth="100.0"
+                                                           styleClass="text-field"/>
+                                            </children>
+                                        </HBox>
+                                    </children>
+                                </VBox>
 
+                                <!-- Update -->
+                                <Button fx:id="update"
+							        text="Update"
+							        onAction="#onUpdateReservationClicked"
+							        styleClass="bistro-button">
+							    <HBox.margin>
+							        <Insets top="18" />
+							    </HBox.margin>
+								</Button>
+                            </children>
+                        </HBox>
+
+                        <!-- Table -->
+                        <TableView fx:id="reservationTable"
+                                   VBox.vgrow="ALWAYS">
+                            <columns>
+                                <TableColumn fx:id="fieldColumn"
+                                             text="Field" prefWidth="220.0"/>
+                                <TableColumn fx:id="valueColumn"
+                                             text="Value" prefWidth="440.0"/>
+                            </columns>
+                        </TableView>
+
+                        <!-- Log -->
+                        <TextArea fx:id="reservationDetailsTextArea"
+                                  wrapText="true"
+                                  prefHeight="80.0"
+                                  styleClass="details-area"/>
+                    </children>
+                </VBox>
+            </center>
+
+            <!-- Bottom Exit -->
+            <bottom>
+                <HBox alignment="CENTER_RIGHT" spacing="10">
+                    <padding>
+                        <Insets top="0" right="40" bottom="20" left="40"/>
+                    </padding>
+                    <children>
+                        <Button fx:id="exit"
+                                text="Exit"
+                                onAction="#onExitClicked"
+                                styleClass="bistro-button"/>
+                    </children>
+                </HBox>
+            </bottom>
+
+        </BorderPane>
     </children>
-</Pane>
+</AnchorPane>
